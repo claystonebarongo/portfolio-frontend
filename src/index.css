@@ -1,0 +1,22 @@
+:root {
+  --deep-navy: #0a192f;
+  --crimson-wine: #4e0303;
+  --glass-white: rgba(255, 255, 255, 0.08);
+  --text-main: #ccd6f6;
+  --text-dim: #8892b0;
+  --accent-blue: #64ffda; /* We'll use this for highlights */
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background-color: var(--deep-navy);
+  color: var(--text-main);
+  overflow: hidden; /* Prevents double scrollbars */
+}
