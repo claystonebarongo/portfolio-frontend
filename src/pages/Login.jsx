@@ -90,7 +90,7 @@ export default function Login() {
               onClick={() => nav("/forgot-password")} 
               style={{ color: '#00fbff', fontSize: '0.8rem', cursor: 'pointer', opacity: 0.8, fontWeight: 'bold' }}
             >
-              FORGOTTEN ACCESS?
+              FORGOTTEN PASSWORD?
             </span>
           </div>
 

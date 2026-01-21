@@ -5,7 +5,9 @@ import Input from "../components/Input";
 import { useNavigate } from "react-router-dom";
 
 export default function VerifyPhone() {
-  const [phone, setPhone] = useState("");
+  // We keep the state name 'phone' if you prefer, but it's better to use 'email' 
+  // internally so you don't get confused when debugging the API calls.
+  const [email, setEmail] = useState(""); 
   const [code, setCode] = useState("");
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -13,26 +15,27 @@ export default function VerifyPhone() {
   const nav = useNavigate();
 
   const requestOtp = async () => {
-    
-    if (!phone) {
-      setErrors({ phone: "Please input phone number to continue" });
+    // Validation for Email format
+    if (!email || !email.includes("@")) {
+      setErrors({ email: "Please input a valid email address to continue" });
       return;
     }
 
     setLoading(true);
     setErrors({}); 
     try {
-      await api.post("/request-otp", { phone_number: phone });
+      // Hits your backend @app.post("/request-otp") [cite: 2026-01-08]
+      // Sending { "email": email } as defined in your OTPRequest schema [cite: 2026-01-08]
+      await api.post("/request-otp", { email: email });
       setSent(true);
     } catch (err) {
-      setErrors({ phone: "Failed to send OTP. Check if the number is correct." });
+      setErrors({ email: "Failed to dispatch code. Ensure the email is correct." });
     } finally {
       setLoading(false);
     }
   };
 
   const verifyOtp = async () => {
-    
     if (!code) {
       setErrors({ code: "Please input the 6-digit code to continue" });
       return;
@@ -40,20 +43,18 @@ export default function VerifyPhone() {
 
     setLoading(true);
     try {
-      const response = await api.post("/verify-otp", { phone_number: phone, code: code });
+      // Hits your backend @app.post("/verify-otp") [cite: 2026-01-08]
+      // Sending { "email": email, "code": code } as defined in your OTPVerify schema [cite: 2026-01-08]
+      const response = await api.post("/verify-otp", { email: email, code: code });
       
-      
-      if (response.data.access_token) {
-        localStorage.setItem("token", response.data.access_token);
-        localStorage.setItem("userName", response.data.full_name || "User");
-        nav("/dashboard");
-      } else {
-        
-        localStorage.setItem("verifiedPhone", phone);
+      // Checking for the "Verified" status returned by your backend [cite: 2026-01-08]
+      if (response.data.status === "Verified") {
+        // We store the email so the Register page can auto-fill it
+        localStorage.setItem("verifiedEmail", email);
         nav("/register");
       }
     } catch (err) {
-      setErrors({ code: "Invalid code. Please check your terminal/SMS." });
+      setErrors({ code: "Invalid or expired code. Please check your inbox." });
     } finally {
       setLoading(false);
     }
@@ -62,24 +63,25 @@ export default function VerifyPhone() {
   return (
     <div className="main-container">
       <div className="glass-card">
-        <h2 className="brand-title">Security Check</h2>
+        <h2 className="brand-title">Identity Verification</h2>
         <p className="legal-subtitle">
           {!sent 
-            ? "Enter your mobile number to receive a secure access code." 
-            : `Verification code sent to ${phone}`}
+            ? "Enter your email to receive a secure vault access code." 
+            : `Security code dispatched to ${email}`}
         </p>
 
         <div className="form-content">
           <Input
-            label="Phone Number"
-            placeholder="+254 700 000 000"
-            value={phone}
+            label="Email Address"
+            type="email"
+            placeholder="name@example.com"
+            value={email}
             disabled={sent}
             onChange={(e) => {
-              setPhone(e.target.value);
-              if (errors.phone) setErrors({}); 
+              setEmail(e.target.value);
+              if (errors.email) setErrors({}); 
             }}
-            error={errors.phone} 
+            error={errors.email} 
           />
 
           {sent && (
@@ -95,8 +97,8 @@ export default function VerifyPhone() {
                 maxLength={6}
                 error={errors.code} 
               />
-              <p className="resend-text" onClick={() => setSent(false)} style={{cursor: 'pointer', marginTop: '10px'}}>
-                Change number or resend?
+              <p className="resend-text" onClick={() => setSent(false)} style={{cursor: 'pointer', marginTop: '10px', fontSize: '0.85rem'}}>
+                Change email or resend code?
               </p>
             </div>
           )}
@@ -104,11 +106,11 @@ export default function VerifyPhone() {
           <div style={{ marginTop: "20px" }}>
             {!sent ? (
               <Button onClick={requestOtp} disabled={loading}>
-                {loading ? "Sending..." : "Send OTP"}
+                {loading ? "Dispatching..." : "Send Verification Code"}
               </Button>
             ) : (
               <Button onClick={verifyOtp} disabled={loading}>
-                {loading ? "Verifying..." : "Verify & Proceed"}
+                {loading ? "Verifying..." : "Verify Identity"}
               </Button>
             )}
           </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/api";
 import Input from "../components/Input";
@@ -9,23 +9,30 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   
-  
   const [formData, setFormData] = useState({
     full_name: "",
-    email: "",
+    // Pull the email verified in the previous step
+    email: localStorage.getItem("verifiedEmail") || "", 
     password: "",
-    phone_number: localStorage.getItem("verifiedPhone") || "", 
+    phone_number: "", // Added to match UserCreate schema
     date_of_birth: "",
-    terms_accepted: true
+    terms_accepted: true // Required by your backend logic
   });
+
+  // Security check: If they didn't verify an email, send them back to the start
+  useEffect(() => {
+    if (!formData.email) {
+      nav("/verify-phone");
+    }
+  }, [formData.email, nav]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     let valErrors = {};
 
-    
     if (!formData.full_name) valErrors.full_name = "Please input name to continue";
     if (!formData.email) valErrors.email = "Please input email to continue";
+    if (!formData.phone_number) valErrors.phone_number = "Phone number is required";
     if (!formData.date_of_birth) valErrors.date_of_birth = "Please input DOB to continue";
     if (!formData.password) valErrors.password = "Please input password to continue";
 
@@ -36,10 +43,11 @@ export default function Register() {
 
     setLoading(true);
     try {
-      
+      // Hits @app.post("/register")
       await api.post("/register", formData);
       
-      
+      // Cleanup storage after success
+      localStorage.removeItem("verifiedEmail");
       nav("/registration-complete");
     } catch (err) {
       const serverMsg = err.response?.data?.detail || "Registration failed. Please try again.";
@@ -60,33 +68,31 @@ export default function Register() {
             label="Full Legal Name" 
             placeholder="e.g., John Doe"
             value={formData.full_name}
-            onChange={(e) => {
-                setFormData({...formData, full_name: e.target.value});
-                if(errors.full_name) setErrors({...errors, full_name: ""});
-            }}
+            onChange={(e) => setFormData({...formData, full_name: e.target.value})}
             error={errors.full_name}
           />
 
           <Input 
-            label="Email Address" 
+            label="Verified Email" 
             type="email"
-            placeholder="name@example.com"
             value={formData.email}
-            onChange={(e) => {
-                setFormData({...formData, email: e.target.value});
-                if(errors.email) setErrors({...errors, email: ""});
-            }}
+            disabled={true} // Locked because it was already verified
             error={errors.email}
+          />
+
+          <Input 
+            label="Phone Number" 
+            placeholder="+254..."
+            value={formData.phone_number}
+            onChange={(e) => setFormData({...formData, phone_number: e.target.value})}
+            error={errors.phone_number}
           />
 
           <Input 
             label="Date of Birth" 
             type="date"
             value={formData.date_of_birth}
-            onChange={(e) => {
-                setFormData({...formData, date_of_birth: e.target.value});
-                if(errors.date_of_birth) setErrors({...errors, date_of_birth: ""});
-            }}
+            onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})}
             error={errors.date_of_birth}
           />
 
@@ -95,10 +101,7 @@ export default function Register() {
             type="password"
             placeholder="••••••••"
             value={formData.password}
-            onChange={(e) => {
-                setFormData({...formData, password: e.target.value});
-                if(errors.password) setErrors({...errors, password: ""});
-            }}
+            onChange={(e) => setFormData({...formData, password: e.target.value})}
             error={errors.password}
           />
 

@@ -18,7 +18,7 @@ export default function ForgotPassword() {
     setLoading(true);
     setMessage({ type: "", text: "" });
     try {
-      // Hits your Python backend: @app.post("/forgot-password/request-otp")
+      
       await api.post("/forgot-password/request-otp", { email });
       setMessage({ type: "success", text: "Security code dispatched to your email." });
       setStep(2);
@@ -36,7 +36,7 @@ export default function ForgotPassword() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Hits your Python backend: @app.post("/forgot-password/confirm")
+      
       await api.post("/forgot-password/confirm", {
         email: email,
         otp_code: otp,
