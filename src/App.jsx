@@ -10,6 +10,7 @@ import Network from "./pages/Network";
 import Settings from "./pages/Settings";
 import AdminDashboard from "./pages/AdminDashboard";
 import TrusteeDashboard from "./pages/TrusteeDashboard"; 
+import ForgotPassword from "./pages/ForgotPassword"; // <--- NEW IMPORT
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // Import your logo
@@ -38,6 +39,7 @@ export default function App() {
       <Routes>
         {/* --- PUBLIC ROUTES --- */}
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} /> {/* <--- NEW ROUTE */}
         <Route path="/terms" element={<Terms />} />
         <Route path="/verify-phone" element={<VerifyPhone />} />
         <Route path="/register" element={<Register />} />

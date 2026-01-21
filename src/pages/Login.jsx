@@ -26,31 +26,22 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Sending JSON to match Python backend
       const response = await api.post("/token", {
         username: email,
         password: password
       });
       
-      // Store user session data
       localStorage.setItem("token", response.data.access_token);
       localStorage.setItem("userId", response.data.user_id); 
       localStorage.setItem("userName", response.data.full_name || "User");
       localStorage.setItem("userEmail", email);
-      
-      // --- THE ADMIN & TRUSTEE UPDATE ---
-      // 1. Store the role (admin or user)
       localStorage.setItem("userRole", response.data.role); 
 
-      // 2. THE TRAFFIC CONTROLLER
       if (response.data.role === "admin") {
-        // Direct Admin users to the Admin panel immediately
         nav("/admin");
       } else if (response.data.is_trustee) {
-        // If they are a trustee for someone, prioritize the Trustee Portal
         nav("/trustee-dashboard");
       } else {
-        // Standard user flow
         nav("/dashboard");
       }
       
@@ -92,6 +83,16 @@ export default function Login() {
             }}
             error={errors.password}
           />
+
+          {/* --- FORGOT PASSWORD LINK --- */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px', marginTop: '-10px' }}>
+            <span 
+              onClick={() => nav("/forgot-password")} 
+              style={{ color: '#00fbff', fontSize: '0.8rem', cursor: 'pointer', opacity: 0.8, fontWeight: 'bold' }}
+            >
+              FORGOTTEN ACCESS?
+            </span>
+          </div>
 
           {errors.server && (
             <p className="error-text" style={{textAlign: 'center', marginBottom: '15px', color: '#ff4d4d'}}>
